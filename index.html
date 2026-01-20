@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laporan Kas Curing2 Grup C</title>
+
+<style>
+body{
+  font-family:Arial,sans-serif;
+  background:#f4f6f8;
+  margin:0;
+  padding:16px
+}
+.header{
+  background:linear-gradient(90deg,#0d6efd,#ffc107);
+  color:#fff;
+  padding:16px;
+  text-align:center;
+  border-radius:12px;
+  font-size:20px;
+  font-weight:bold;
+  margin-bottom:16px
+}
+.card{
+  background:#fff;
+  padding:16px;
+  border-radius:12px;
+  margin-bottom:16px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08)
+}
+label{font-weight:bold;margin-top:10px;display:block}
+input,select{
+  width:100%;
+  padding:8px;
+  margin-top:4px
+}
+button{
+  padding:8px 12px;
+  margin-top:10px;
+  border-radius:6px;
+  border:0;
+  cursor:pointer
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px
+}
+th,td{
+  border:1px solid #ddd;
+  padding:8px;
+  text-align:center
+}
+th{background:#eee}
+.masuk{color:green;font-weight:bold}
+.keluar{color:red;font-weight:bold}
+.hidden{display:none}
+.btn-edit{background:#0d6efd;color:#fff}
+.btn-hapus{background:#dc3545;color:#fff;margin-left:4px}
+</style>
+</head>
+
+<body onload="initApp()">
+
+<div class="header">LAPORAN KAS CURING2 GRUP C</div>
+
+<!-- LOGIN -->
+<div class="card" id="loginBox">
+  <h3>Login Admin</h3>
+  <input type="password" id="adminPass" placeholder="Password admin">
+  <button onclick="loginAdmin()">Login</button>
+</div>
+
+<!-- ADMIN FORM -->
+<div class="card hidden" id="adminForm">
+  <h3>Input Transaksi</h3>
+  <label>Tanggal</label>
+  <input type="date" id="tanggal">
+
+  <label>Jenis</label>
+  <select id="jenis">
+    <option value="Masuk">Masuk</option>
+    <option value="Keluar">Keluar</option>
+  </select>
+
+  <label>Nama Member</label>
+  <select id="member"></select>
+
+  <label>Keterangan</label>
+  <input id="keterangan">
+
+  <label>Jumlah</label>
+  <input type="number" id="jumlah">
+
+  <button onclick="simpan()">Simpan</button>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<!-- FILTER -->
+<div class="card">
+  <h3>Rekap Bulanan</h3>
+  <select id="filterBulan" onchange="render()"></select>
+</div>
+
+<!-- TABEL -->
+<div class="card">
+  <h3>Data Transaksi</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Tanggal</th>
+        <th>Jenis</th>
+        <th>Nama</th>
+        <th>Ket</th>
+        <th>Jumlah</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody id="tabelData"></tbody>
+  </table>
+</div>
+
+<!-- STATUS -->
+<div class="card">
+  <h3>Status Pembayaran Member</h3>
+  <ul id="statusMember"></ul>
+</div>
+
+<!-- RINGKASAN -->
+<div class="card">
+  <h3>Ringkasan</h3>
+  <p>Total Masuk: <b id="totalMasuk"></b></p>
+  <p>Total Keluar: <b id="totalKeluar"></b></p>
+  <p>Saldo: <b id="saldo"></b></p>
+</div>
+
+<script>
+const API_URL="https://script.google.com/macros/s/AKfycbwvS5vGbP2jml484bsAIFD0ntQHr5HInhSYyKyMEmcudJsv2Vk7yqOTmzYbXcL9En-3aQ/exec";
+const ADMIN_PASSWORD="admin123";
+
+const members=[
+  'Ade Hilman','Sutanto','Joko P','Suyatno','Dwi Diva','Zaenal A',
+  'Syarifudin','Wahyudi','Afif','Zuhri','Effendi','Susilo A',
+  'Slamet R','Aji Joko','A.Febri','Kuswanto','Adhi M'
+];
+
+let data=[];
+let statusMember;
+
+function initApp(){
+  statusMember=document.getElementById('statusMember');
+
+  member.innerHTML='<option>-- ADMIN / UMUM --</option>';
+  members.forEach(m=>member.innerHTML+=`<option>${m}</option>`);
+
+  loadData();
+
+  if(localStorage.isAdmin==="true"){
+    showAdmin();
+  }
+}
+
+function loginAdmin(){
+  if(adminPass.value===ADMIN_PASSWORD){
+    localStorage.isAdmin="true";
+    showAdmin();
+  }else alert("Password salah");
+}
+
+function logout(){
+  localStorage.removeItem('isAdmin');
+  location.reload();
+}
+
+function showAdmin(){
+  loginBox.classList.add('hidden');
+  adminForm.classList.remove('hidden');
+}
+
+async function loadData(){
+  const res=await fetch(API_URL);
+  data=await res.json();
+  initBulan();
+  render();
+}
+
+async function simpan(){
+  if(!tanggal.value||!jumlah.value) return alert("Lengkapi data");
+
+  await fetch(API_URL,{
+    method:"POST",
+    body:JSON.stringify({
+      tanggal:tanggal.value,
+      jenis:jenis.value,
+      member:member.value||"ADMIN",
+      keterangan:keterangan.value,
+      jumlah:Number(jumlah.value)
+    })
+  });
+
+  tanggal.value=keterangan.value=jumlah.value="";
+  member.value="";
+  loadData();
+}
+
+function render(){
+  tabelData.innerHTML="";
+  let masuk=0,keluar=0;
+  const bulan=filterBulan.value;
+
+  const filtered=data.filter(t=>!bulan||t.tanggal.startsWith(bulan));
+
+  filtered.forEach((t,i)=>{
+    if(t.jenis==="Masuk") masuk+=t.jumlah;
+    else keluar+=t.jumlah;
+
+    tabelData.innerHTML+=`
+      <tr>
+        <td>${t.tanggal}</td>
+        <td class="${t.jenis==='Masuk'?'masuk':'keluar'}">${t.jenis}</td>
+        <td>${t.member}</td>
+        <td>${t.keterangan||''}</td>
+        <td>Rp ${t.jumlah.toLocaleString('id-ID')}</td>
+        <td>
+          ${localStorage.isAdmin?
+          `<button class="btn-edit">Edit</button>
+           <button class="btn-hapus">Hapus</button>`:'-'}
+        </td>
+      </tr>`;
+  });
+
+  totalMasuk.innerText="Rp "+masuk.toLocaleString('id-ID');
+  totalKeluar.innerText="Rp "+keluar.toLocaleString('id-ID');
+  saldo.innerText="Rp "+(masuk-keluar).toLocaleString('id-ID');
+
+  // STATUS MEMBER
+  statusMember.innerHTML="";
+  members.forEach(n=>{
+    const paid=data.some(t=>
+      t.jenis==="Masuk" &&
+      t.member===n &&
+      (!bulan||t.tanggal.startsWith(bulan))
+    );
+    statusMember.innerHTML+=`<li>${n} : ${paid?'✅ Sudah bayar':'❌ Belum bayar'}</li>`;
+  });
+}
+
+function initBulan(){
+  const set=new Set();
+  data.forEach(t=>set.add(t.tanggal.substring(0,7)));
+  filterBulan.innerHTML='<option value="">Semua Bulan</option>';
+  [...set].sort().forEach(b=>filterBulan.innerHTML+=`<option>${b}</option>`);
+}
+</script>
+</body>
+</html>
