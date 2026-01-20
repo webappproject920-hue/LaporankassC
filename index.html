@@ -183,7 +183,7 @@ function render(){
 
 tabelData.innerHTML += `
   <tr>
-    <td>${formatTanggal(vals[0])}</td>
+    <td>${t.tanggal}</td>
     <td class="${vals[1] === 'Masuk' ? 'masuk' : 'keluar'}">${vals[1]}</td>
     <td>${vals[2]}</td>
     <td>${vals[3] ?? ''}</td>
