@@ -27,12 +27,14 @@ th{background:#eee}
 
 <div class="header">LAPORAN KAS CURING2 GRUP C</div>
 
+<!-- LOGIN -->
 <div class="card" id="loginBox">
   <h3>Login Admin</h3>
   <input type="password" id="adminPass" placeholder="Password admin">
   <button onclick="loginAdmin()">Login</button>
 </div>
 
+<!-- FORM -->
 <div class="card hidden" id="adminForm">
   <h3 id="formTitle">Input Transaksi</h3>
 
@@ -61,10 +63,12 @@ th{background:#eee}
   <button onclick="logout()">LOGOUT</button>
 </div>
 
+<!-- FILTER -->
 <div class="card">
   <select id="filterBulan" onchange="render()"></select>
 </div>
 
+<!-- TABEL -->
 <div class="card">
 <table>
 <thead>
@@ -76,6 +80,7 @@ th{background:#eee}
 </table>
 </div>
 
+<!-- RINGKASAN -->
 <div class="card">
   <p>Total Masuk: <b id="totalMasuk"></b></p>
   <p>Total Keluar: <b id="totalKeluar"></b></p>
@@ -130,12 +135,16 @@ async function loadData(){
 }
 
 async function simpan(){
-  if(!tanggal.value||!jumlah.value) return alert("Lengkapi data");
+  if(!tanggal.value||!jumlah.value){
+    alert("Lengkapi data");
+    return;
+  }
 
   const isEdit = editId.value !== "";
 
   await fetch(API_URL,{
     method:"POST",
+    mode:"no-cors",
     headers:{ "Content-Type":"application/json" },
     body:JSON.stringify({
       action: isEdit ? "edit" : "add",
@@ -149,7 +158,7 @@ async function simpan(){
   });
 
   resetForm();
-  loadData();
+  setTimeout(loadData,500);
 }
 
 async function hapusData(id){
@@ -157,6 +166,7 @@ async function hapusData(id){
 
   await fetch(API_URL,{
     method:"POST",
+    mode:"no-cors",
     headers:{ "Content-Type":"application/json" },
     body:JSON.stringify({
       action:"delete",
@@ -164,20 +174,18 @@ async function hapusData(id){
     })
   });
 
-  loadData();
+  setTimeout(loadData,500);
 }
 
 /* ================= FORM ================= */
 function editData(i){
   const t=data[i];
   editId.value=t.id;
-
   tanggal.value=t.tanggal;
   jenis.value=t.jenis;
   member.value=t.member;
   keterangan.value=t.keterangan;
   jumlah.value=t.jumlah;
-
   formTitle.innerText="Edit Transaksi";
   showAdmin();
 }
