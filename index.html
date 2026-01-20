@@ -179,16 +179,18 @@ function render(){
   filtered.forEach(t=>{
     if(t.jenis==="Masuk") masuk+=t.jumlah;
     else keluar+=t.jumlah;
-    tabelData.innerHTML+=`
-      <tr>
-        <td>${formatTanggal(t.tanggal)}</td>
-        <td class="${t.jenis==='Masuk'?'masuk':'keluar'}">${t.jenis}</td>
-        <td>${t.member}</td>
-        <td>${t.keterangan || t.ket || ''}</td>
-        <td>Rp ${t.jumlah.toLocaleString('id-ID')}</td>
-      </tr>`;
-  });
-
+    
+   tabelData.innerHTML += `
+  <tr>
+    <td>${formatTanggal(t.tanggal ?? t[0])}</td>
+    <td class="${(t.jenis ?? t[1]) === 'Masuk' ? 'masuk' : 'keluar'}">
+      ${t.jenis ?? t[1]}
+    </td>
+    <td>${t.member ?? t[2]}</td>
+    <td>${t.keterangan ?? t.ket ?? t[3] ?? ''}</td>
+    <td>Rp ${(t.jumlah ?? t[4]).toLocaleString('id-ID')}</td>
+  </tr>
+`;
   members.forEach(n=>{
     const paid=filtered.some(t=>t.jenis==="Masuk"&&t.member===n);
     statusMember.innerHTML+=`<li>${n} : ${paid?'✅ Sudah bayar':'❌ Belum bayar'}</li>`;
