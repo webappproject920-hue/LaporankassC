@@ -6,20 +6,56 @@
 <title>Laporan Kas Curing2 Grup C</title>
 
 <style>
-body{font-family:Arial;background:#f4f6f8;padding:16px}
-.header{background:linear-gradient(90deg,#0d6efd,#ffc107);color:#fff;padding:16px;text-align:center;border-radius:12px;font-size:20px;font-weight:bold;margin-bottom:16px}
-.card{background:#fff;padding:16px;border-radius:12px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+body{
+  font-family:Arial,sans-serif;
+  background:#f4f6f8;
+  margin:0;
+  padding:16px
+}
+.header{
+  background:linear-gradient(90deg,#0d6efd,#ffc107);
+  color:#fff;
+  padding:16px;
+  text-align:center;
+  border-radius:12px;
+  font-size:20px;
+  font-weight:bold;
+  margin-bottom:16px
+}
+.card{
+  background:#fff;
+  padding:16px;
+  border-radius:12px;
+  margin-bottom:16px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08)
+}
 label{font-weight:bold;margin-top:10px;display:block}
-input,select,button{width:100%;padding:8px;margin-top:6px}
-button{border:0;border-radius:6px;cursor:pointer}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{border:1px solid #ddd;padding:8px;text-align:center}
+input,select{
+  width:100%;
+  padding:8px;
+  margin-top:4px
+}
+button{
+  padding:8px 12px;
+  margin-top:10px;
+  border-radius:6px;
+  border:0;
+  cursor:pointer
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px
+}
+th,td{
+  border:1px solid #ddd;
+  padding:8px;
+  text-align:center
+}
 th{background:#eee}
 .masuk{color:green;font-weight:bold}
 .keluar{color:red;font-weight:bold}
 .hidden{display:none}
-.btn-edit{background:#0d6efd;color:#fff}
-.btn-hapus{background:#dc3545;color:#fff}
 </style>
 </head>
 
@@ -27,29 +63,25 @@ th{background:#eee}
 
 <div class="header">LAPORAN KAS CURING2 GRUP C</div>
 
-<!-- LOGIN -->
 <div class="card" id="loginBox">
   <h3>Login Admin</h3>
   <input type="password" id="adminPass" placeholder="Password admin">
   <button onclick="loginAdmin()">Login</button>
 </div>
 
-<!-- FORM -->
 <div class="card hidden" id="adminForm">
-  <h3 id="formTitle">Input Transaksi</h3>
-
-  <input type="hidden" id="editId">
+  <h3>Input Transaksi</h3>
 
   <label>Tanggal</label>
   <input type="date" id="tanggal">
 
   <label>Jenis</label>
   <select id="jenis">
-    <option>Masuk</option>
-    <option>Keluar</option>
+    <option value="Masuk">Masuk</option>
+    <option value="Keluar">Keluar</option>
   </select>
 
-  <label>Nama</label>
+  <label>Nama Member</label>
   <select id="member"></select>
 
   <label>Keterangan</label>
@@ -58,57 +90,57 @@ th{background:#eee}
   <label>Jumlah</label>
   <input type="number" id="jumlah">
 
-  <button onclick="simpan()">SIMPAN</button>
-  <button onclick="resetForm()">BATAL</button>
-  <button onclick="logout()">LOGOUT</button>
+  <button onclick="simpan()">Simpan</button>
+  <button onclick="logout()">Logout</button>
 </div>
 
-<!-- FILTER -->
 <div class="card">
+  <h3>Rekap Bulanan</h3>
   <select id="filterBulan" onchange="render()"></select>
 </div>
 
-<!-- TABEL -->
 <div class="card">
-<table>
-<thead>
-<tr>
-<th>Tanggal</th><th>Jenis</th><th>Nama</th><th>Ket</th><th>Jumlah</th><th>Aksi</th>
-</tr>
-</thead>
-<tbody id="tabelData"></tbody>
-</table>
+  <h3>Data Transaksi</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Tanggal</th>
+        <th>Jenis</th>
+        <th>Nama</th>
+        <th>Ket</th>
+        <th>Jumlah</th>
+      </tr>
+    </thead>
+    <tbody id="tabelData"></tbody>
+  </table>
 </div>
 
-<!-- RINGKASAN -->
 <div class="card">
+  <h3>Ringkasan</h3>
   <p>Total Masuk: <b id="totalMasuk"></b></p>
   <p>Total Keluar: <b id="totalKeluar"></b></p>
   <p>Saldo: <b id="saldo"></b></p>
 </div>
 
 <script>
-/* ================= CONFIG ================= */
-const API_URL="https://script.google.com/macros/s/AKfycbw8O9AxSmLOoZrd3kcocigWTzxgLlOJfy3x-LB5sYjNRqiadWXWI7pGtwlUSg0EVJ9wHQ/exec";
+const API_URL="https://script.google.com/macros/s/AKfycbwvS5vGbP2jml484bsAIFD0ntQHr5HInhSYyKyMEmcudJsv2Vk7yqOTmzYbXcL9En-3aQ/exec";
 const ADMIN_PASSWORD="admin123";
 
 const members=[
- 'Ade Hilman','Sutanto','Joko P','Suyatno','Dwi Diva','Zaenal A',
- 'Syarifudin','Wahyudi','Afif','Zuhri','Effendi','Susilo A',
- 'Slamet R','Aji Joko','A.Febri','Kuswanto','Adhi M'
+  'Ade Hilman','Sutanto','Joko P','Suyatno','Dwi Diva','Zaenal A',
+  'Syarifudin','Wahyudi','Afif','Zuhri','Effendi','Susilo A',
+  'Slamet R','Aji Joko','A.Febri','Kuswanto','Adhi M'
 ];
 
 let data=[];
 
-/* ================= INIT ================= */
 function initApp(){
-  member.innerHTML='<option>ADMIN</option>';
+  member.innerHTML='<option value="">-- ADMIN / UMUM --</option>';
   members.forEach(m=>member.innerHTML+=`<option>${m}</option>`);
   loadData();
   if(localStorage.isAdmin==="true") showAdmin();
 }
 
-/* ================= AUTH ================= */
 function loginAdmin(){
   if(adminPass.value===ADMIN_PASSWORD){
     localStorage.isAdmin="true";
@@ -117,16 +149,15 @@ function loginAdmin(){
 }
 
 function logout(){
-  localStorage.removeItem("isAdmin");
+  localStorage.removeItem('isAdmin');
   location.reload();
 }
 
 function showAdmin(){
-  loginBox.classList.add("hidden");
-  adminForm.classList.remove("hidden");
+  loginBox.classList.add('hidden');
+  adminForm.classList.remove('hidden');
 }
 
-/* ================= API ================= */
 async function loadData(){
   const res=await fetch(API_URL);
   data=await res.json();
@@ -140,100 +171,57 @@ async function simpan(){
     return;
   }
 
-  const isEdit = editId.value !== "";
-
   await fetch(API_URL,{
     method:"POST",
     mode:"no-cors",
     headers:{ "Content-Type":"application/json" },
     body:JSON.stringify({
-      action: isEdit ? "edit" : "add",
-      id: editId.value,
-      tanggal: tanggal.value,
-      jenis: jenis.value,
-      member: member.value,
-      keterangan: keterangan.value,
-      jumlah: Number(jumlah.value)
+      action:"add",
+      tanggal:tanggal.value,   // yyyy-mm-dd
+      jenis:jenis.value,
+      member:member.value||"ADMIN",
+      keterangan:keterangan.value,
+      jumlah:Number(jumlah.value)
     })
   });
 
-  resetForm();
-  setTimeout(loadData,500);
-}
-
-async function hapusData(id){
-  if(!confirm("Hapus data ini?")) return;
-
-  await fetch(API_URL,{
-    method:"POST",
-    mode:"no-cors",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({
-      action:"delete",
-      id:id
-    })
-  });
-
-  setTimeout(loadData,500);
-}
-
-/* ================= FORM ================= */
-function editData(i){
-  const t=data[i];
-  editId.value=t.id;
-  tanggal.value=t.tanggal;
-  jenis.value=t.jenis;
-  member.value=t.member;
-  keterangan.value=t.keterangan;
-  jumlah.value=t.jumlah;
-  formTitle.innerText="Edit Transaksi";
-  showAdmin();
-}
-
-function resetForm(){
-  editId.value="";
   tanggal.value="";
   keterangan.value="";
   jumlah.value="";
   member.selectedIndex=0;
-  formTitle.innerText="Input Transaksi";
+
+  setTimeout(loadData,500);
 }
 
-/* ================= RENDER ================= */
 function render(){
   tabelData.innerHTML="";
-  let masuk=0, keluar=0;
+  let masuk=0,keluar=0;
   const bulan=filterBulan.value;
 
-  data.filter(t=>!bulan||t.tanggal.startsWith(bulan))
-  .forEach((t,i)=>{
-    if(t.jenis==="Masuk") masuk+=t.jumlah;
-    else keluar+=t.jumlah;
+  data
+    .filter(t=>!bulan||t.tanggal.startsWith(bulan))
+    .forEach(t=>{
+      if(t.jenis==="Masuk") masuk+=t.jumlah;
+      else keluar+=t.jumlah;
 
-    tabelData.innerHTML+=`
-    <tr>
-      <td>${t.tanggal}</td>
-      <td class="${t.jenis==="Masuk"?"masuk":"keluar"}">${t.jenis}</td>
-      <td>${t.member}</td>
-      <td>${t.keterangan||""}</td>
-      <td>Rp ${t.jumlah.toLocaleString("id-ID")}</td>
-      <td>
-        ${localStorage.isAdmin?
-          `<button class="btn-edit" onclick="editData(${i})">Edit</button>
-           <button class="btn-hapus" onclick="hapusData('${t.id}')">Hapus</button>`
-        :"-"}
-      </td>
-    </tr>`;
-  });
+      tabelData.innerHTML+=`
+        <tr>
+          <td>${t.tanggal}</td>
+          <td class="${t.jenis==='Masuk'?'masuk':'keluar'}">${t.jenis}</td>
+          <td>${t.member}</td>
+          <td>${t.keterangan||''}</td>
+          <td>Rp ${t.jumlah.toLocaleString('id-ID')}</td>
+        </tr>`;
+    });
 
-  totalMasuk.innerText="Rp "+masuk.toLocaleString("id-ID");
-  totalKeluar.innerText="Rp "+keluar.toLocaleString("id-ID");
-  saldo.innerText="Rp "+(masuk-keluar).toLocaleString("id-ID");
+  totalMasuk.innerText="Rp "+masuk.toLocaleString('id-ID');
+  totalKeluar.innerText="Rp "+keluar.toLocaleString('id-ID');
+  saldo.innerText="Rp "+(masuk-keluar).toLocaleString('id-ID');
 }
 
 function initBulan(){
   const set=new Set();
-  data.forEach(t=>set.add(t.tanggal.slice(0,7)));
+  data.forEach(t=>set.add(t.tanggal.substring(0,7)));
   filterBulan.innerHTML='<option value="">Semua Bulan</option>';
   [...set].sort().forEach(b=>filterBulan.innerHTML+=`<option>${b}</option>`);
 }
