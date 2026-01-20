@@ -32,7 +32,7 @@ th{background:#eee}
   <button onclick="loginAdmin()">Login</button>
 </div>
 
-<!-- FORM ADMIN -->
+<!-- ADMIN FORM -->
 <div class="card hidden" id="adminForm">
   <h3>Input Transaksi</h3>
 
@@ -103,15 +103,10 @@ const members=[
 
 let data=[];
 
-function formatTanggal(t){
-  const d=new Date(t);
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-async function initApp(){
+function initApp(){
   member.innerHTML='<option value="">-- ADMIN / UMUM --</option>';
   members.forEach(m=>member.innerHTML+=`<option>${m}</option>`);
-  await loadData();
+  loadData();
   if(localStorage.isAdmin==="true") showAdmin();
 }
 
@@ -133,8 +128,8 @@ function showAdmin(){
 }
 
 async function loadData(){
-  const res=await fetch(API_URL);
-  data=await res.json();
+  const res = await fetch(API_URL);
+  data = await res.json();
   initBulan();
   render();
 }
@@ -156,14 +151,20 @@ async function simpan(){
     })
   });
 
-  tanggal.value="";jumlah.value="";keterangan.value="";
+  tanggal.value="";
+  jumlah.value="";
+  keterangan.value="";
   member.selectedIndex=0;
-  setTimeout(loadData,500);
+
+  setTimeout(loadData,700);
 }
 
 function initBulan(){
   const set=new Set();
-  data.forEach(t=>set.add(formatTanggal(t.tanggal).substring(0,7)));
+  data.forEach(t=>{
+    const d = String(t.tanggal || t[0]).substring(0,7);
+    set.add(d);
+  });
   filterBulan.innerHTML='<option value="">Semua Bulan</option>';
   [...set].sort().forEach(b=>filterBulan.innerHTML+=`<option>${b}</option>`);
 }
@@ -171,27 +172,41 @@ function initBulan(){
 function render(){
   tabelData.innerHTML="";
   statusMember.innerHTML="";
-  let masuk=0,keluar=0;
-  const bulan=filterBulan.value;
+  let masuk=0, keluar=0;
 
-  const filtered=data.filter(t=>!bulan||formatTanggal(t.tanggal).startsWith(bulan));
+  const bulan = filterBulan.value;
 
+  const filtered = data.filter(t=>{
+    const tg = String(t.tanggal || t[0]);
+    return !bulan || tg.startsWith(bulan);
+  });
+
+  // === TABEL ===
   filtered.forEach(t=>{
-    if(t.jenis==="Masuk") masuk+=t.jumlah;
-    else keluar+=t.jumlah;
-    const vals = Array.isArray(t) ? t : Object.values(t);
+    const v = Array.isArray(t) ? t : [
+      t.tanggal, t.jenis, t.member, t.keterangan, t.jumlah
+    ];
 
-tabelData.innerHTML += `
-  <tr>
-    <td>${t.tanggal}</td>
-    <td class="${vals[1] === 'Masuk' ? 'masuk' : 'keluar'}">${vals[1]}</td>
-    <td>${vals[2]}</td>
-    <td>${vals[3] ?? ''}</td>
-    <td>Rp ${Number(vals[4]).toLocaleString('id-ID')}</td>
-  </tr>
-`;
+    if(v[1]==="Masuk") masuk+=Number(v[4]);
+    else keluar+=Number(v[4]);
+
+    tabelData.innerHTML+=`
+      <tr>
+        <td>${v[0]}</td>
+        <td class="${v[1]==='Masuk'?'masuk':'keluar'}">${v[1]}</td>
+        <td>${v[2]}</td>
+        <td>${v[3]||''}</td>
+        <td>Rp ${Number(v[4]).toLocaleString('id-ID')}</td>
+      </tr>
+    `;
+  });
+
+  // === STATUS MEMBER ===
   members.forEach(n=>{
-    const paid=filtered.some(t=>t.jenis==="Masuk"&&t.member===n);
+    const paid = filtered.some(t=>{
+      const v = Array.isArray(t) ? t : [t.tanggal,t.jenis,t.member];
+      return v[1]==="Masuk" && v[2]===n;
+    });
     statusMember.innerHTML+=`<li>${n} : ${paid?'✅ Sudah bayar':'❌ Belum bayar'}</li>`;
   });
 
