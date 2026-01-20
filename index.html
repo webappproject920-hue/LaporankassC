@@ -184,7 +184,7 @@ function render(){
         <td>${formatTanggal(t.tanggal)}</td>
         <td class="${t.jenis==='Masuk'?'masuk':'keluar'}">${t.jenis}</td>
         <td>${t.member}</td>
-        <td>${t.keterangan||''}</td>
+        <td>${t.keterangan || t.ket || ''}</td>
         <td>Rp ${t.jumlah.toLocaleString('id-ID')}</td>
       </tr>`;
   });
