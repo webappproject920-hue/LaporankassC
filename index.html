@@ -179,16 +179,15 @@ function render(){
   filtered.forEach(t=>{
     if(t.jenis==="Masuk") masuk+=t.jumlah;
     else keluar+=t.jumlah;
-    
-   tabelData.innerHTML += `
+    const vals = Array.isArray(t) ? t : Object.values(t);
+
+tabelData.innerHTML += `
   <tr>
-    <td>${formatTanggal(t.tanggal ?? t[0])}</td>
-    <td class="${(t.jenis ?? t[1]) === 'Masuk' ? 'masuk' : 'keluar'}">
-      ${t.jenis ?? t[1]}
-    </td>
-    <td>${t.member ?? t[2]}</td>
-    <td>${t.keterangan ?? t.ket ?? t[3] ?? ''}</td>
-    <td>Rp ${(t.jumlah ?? t[4]).toLocaleString('id-ID')}</td>
+    <td>${formatTanggal(vals[0])}</td>
+    <td class="${vals[1] === 'Masuk' ? 'masuk' : 'keluar'}">${vals[1]}</td>
+    <td>${vals[2]}</td>
+    <td>${vals[3] ?? ''}</td>
+    <td>Rp ${Number(vals[4]).toLocaleString('id-ID')}</td>
   </tr>
 `;
   members.forEach(n=>{
