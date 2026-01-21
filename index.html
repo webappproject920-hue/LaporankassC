@@ -25,12 +25,14 @@ th{background:#eee}
 
 <div class="header">LAPORAN KAS CURING2 GRUP C</div>
 
+<!-- LOGIN -->
 <div class="card" id="loginBox">
   <h3>Login Admin</h3>
   <input type="password" id="adminPass" placeholder="Password admin">
   <button onclick="loginAdmin()">Login</button>
 </div>
 
+<!-- FORM ADMIN -->
 <div class="card hidden" id="adminForm">
   <h3>Input Transaksi</h3>
 
@@ -94,23 +96,22 @@ const API_URL="https://script.google.com/macros/s/AKfycbwvS5vGbP2jml484bsAIFD0nt
 const ADMIN_PASSWORD="admin123";
 
 const members=[
-'Ade Hilman','Sutanto','Joko P','Suyatno','Dwi Diva','Zaenal A',
-'Syarifudin','Wahyudi','Afif','Zuhri','Effendi','Susilo A',
-'Slamet R','Aji Joko','A.Febri','Kuswanto','Adhi M'
+  'Ade Hilman','Sutanto','Joko P','Suyatno','Dwi Diva','Zaenal A',
+  'Syarifudin','Wahyudi','Afif','Zuhri','Effendi','Susilo A',
+  'Slamet R','Aji Joko','A.Febri','Kuswanto','Adhi M'
 ];
 
 let data=[];
 
-function formatTanggal(val){
-  const d=new Date(val);
-  if(isNaN(d)) return '';
-  return d.toISOString().slice(0,10);
+function formatTanggal(t){
+  const d=new Date(t);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-function initApp(){
+async function initApp(){
   member.innerHTML='<option value="">-- ADMIN / UMUM --</option>';
   members.forEach(m=>member.innerHTML+=`<option>${m}</option>`);
-  loadData();
+  await loadData();
   if(localStorage.isAdmin==="true") showAdmin();
 }
 
@@ -118,7 +119,7 @@ function loginAdmin(){
   if(adminPass.value===ADMIN_PASSWORD){
     localStorage.isAdmin="true";
     showAdmin();
-  } else alert("Password salah");
+  }else alert("Password salah");
 }
 
 function logout(){
@@ -132,8 +133,8 @@ function showAdmin(){
 }
 
 async function loadData(){
-  const res = await fetch(API_URL);
-  data = await res.json();
+  const res=await fetch(API_URL);
+  data=await res.json();
   initBulan();
   render();
 }
@@ -155,19 +156,14 @@ async function simpan(){
     })
   });
 
-  tanggal.value="";
-  jumlah.value="";
-  keterangan.value="";
+  tanggal.value="";jumlah.value="";keterangan.value="";
   member.selectedIndex=0;
-
-  setTimeout(loadData,800);
+  setTimeout(loadData,500);
 }
 
 function initBulan(){
   const set=new Set();
-  data.forEach(r=>{
-    if(r[0]) set.add(formatTanggal(r[0]).slice(0,7));
-  });
+  data.forEach(t=>set.add(formatTanggal(t.tanggal).substring(0,7)));
   filterBulan.innerHTML='<option value="">Semua Bulan</option>';
   [...set].sort().forEach(b=>filterBulan.innerHTML+=`<option>${b}</option>`);
 }
@@ -175,37 +171,26 @@ function initBulan(){
 function render(){
   tabelData.innerHTML="";
   statusMember.innerHTML="";
-  let masuk=0, keluar=0;
-
+  let masuk=0,keluar=0;
   const bulan=filterBulan.value;
 
-  const filtered=data.filter(r=>{
-    const t=formatTanggal(r[0]);
-    return !bulan || t.startsWith(bulan);
-  });
+  const filtered=data.filter(t=>!bulan||formatTanggal(t.tanggal).startsWith(bulan));
 
-  filtered.forEach(r=>{
-    const tanggal=formatTanggal(r[0]);
-    const jenis=r[1];
-    const nama=r[2];
-    const ket=r[3]||"";
-    const jumlah=Number(r[4])||0;
-
-    if(jenis==="Masuk") masuk+=jumlah;
-    else keluar+=jumlah;
-
+  filtered.forEach(t=>{
+    if(t.jenis==="Masuk") masuk+=t.jumlah;
+    else keluar+=t.jumlah;
     tabelData.innerHTML+=`
-    <tr>
-      <td>${tanggal}</td>
-      <td class="${jenis==='Masuk'?'masuk':'keluar'}">${jenis}</td>
-      <td>${nama}</td>
-      <td>${ket}</td>
-      <td>Rp ${jumlah.toLocaleString('id-ID')}</td>
-    </tr>`;
+      <tr>
+        <td>${formatTanggal(t.tanggal)}</td>
+        <td class="${t.jenis==='Masuk'?'masuk':'keluar'}">${t.jenis}</td>
+        <td>${t.member}</td>
+        <td>${t.keterangan || t.ket || ''}</td>
+        <td>Rp ${t.jumlah.toLocaleString('id-ID')}</td>
+      </tr>`;
   });
 
   members.forEach(n=>{
-    const paid=filtered.some(r=>r[1]==="Masuk"&&r[2]===n);
+    const paid=filtered.some(t=>t.jenis==="Masuk"&&t.member===n);
     statusMember.innerHTML+=`<li>${n} : ${paid?'✅ Sudah bayar':'❌ Belum bayar'}</li>`;
   });
 
@@ -214,6 +199,5 @@ function render(){
   saldo.innerText="Rp "+(masuk-keluar).toLocaleString('id-ID');
 }
 </script>
-
 </body>
 </html>
