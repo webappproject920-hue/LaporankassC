@@ -169,50 +169,50 @@ function initBulan(){
   [...set].sort().forEach(b=>filterBulan.innerHTML+=`<option>${b}</option>`);
 }
 
+<script>
 function render(){
-  tabelData.innerHTML="";
-  statusMember.innerHTML="";
-  let masuk=0, keluar=0;
+  tabelData.innerHTML = "";
+  statusMember.innerHTML = "";
 
+  let masuk = 0, keluar = 0;
   const bulan = filterBulan.value;
 
-  const filtered = data.filter(t=>{
-    const tg = String(t.tanggal || t[0]);
-    return !bulan || tg.startsWith(bulan);
+  const filtered = data.filter(row=>{
+    const tgl = formatTanggal(row[0]);
+    return !bulan || tgl.startsWith(bulan);
   });
 
-  // === TABEL ===
-  filtered.forEach(t=>{
-    const v = Array.isArray(t) ? t : [
-      t.tanggal, t.jenis, t.member, t.keterangan, t.jumlah
-    ];
+  filtered.forEach(row=>{
+    const tanggal = formatTanggal(row[0]);
+    const jenis = row[1];
+    const member = row[2];
+    const ket = row[3] || "";
+    const jumlah = Number(row[4]) || 0;
 
-    if(v[1]==="Masuk") masuk+=Number(v[4]);
-    else keluar+=Number(v[4]);
+    if(jenis === "Masuk") masuk += jumlah;
+    else keluar += jumlah;
 
-    tabelData.innerHTML+=`
+    tabelData.innerHTML += `
       <tr>
-        <td>${v[0]}</td>
-        <td class="${v[1]==='Masuk'?'masuk':'keluar'}">${v[1]}</td>
-        <td>${v[2]}</td>
-        <td>${v[3]||''}</td>
-        <td>Rp ${Number(v[4]).toLocaleString('id-ID')}</td>
+        <td>${tanggal}</td>
+        <td class="${jenis === 'Masuk' ? 'masuk' : 'keluar'}">${jenis}</td>
+        <td>${member}</td>
+        <td>${ket}</td>
+        <td>Rp ${jumlah.toLocaleString('id-ID')}</td>
       </tr>
     `;
   });
 
-  // === STATUS MEMBER ===
   members.forEach(n=>{
-    const paid = filtered.some(t=>{
-      const v = Array.isArray(t) ? t : [t.tanggal,t.jenis,t.member];
-      return v[1]==="Masuk" && v[2]===n;
-    });
-    statusMember.innerHTML+=`<li>${n} : ${paid?'✅ Sudah bayar':'❌ Belum bayar'}</li>`;
+    const paid = filtered.some(r=>r[1]==="Masuk" && r[2]===n);
+    statusMember.innerHTML += `
+      <li>${n} : ${paid ? '✅ Sudah bayar' : '❌ Belum bayar'}</li>
+    `;
   });
 
-  totalMasuk.innerText="Rp "+masuk.toLocaleString('id-ID');
-  totalKeluar.innerText="Rp "+keluar.toLocaleString('id-ID');
-  saldo.innerText="Rp "+(masuk-keluar).toLocaleString('id-ID');
+  totalMasuk.innerText = "Rp " + masuk.toLocaleString('id-ID');
+  totalKeluar.innerText = "Rp " + keluar.toLocaleString('id-ID');
+  saldo.innerText = "Rp " + (masuk - keluar).toLocaleString('id-ID');
 }
 </script>
 </body>
