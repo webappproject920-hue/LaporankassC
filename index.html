@@ -189,7 +189,7 @@ function render(){
 
     tabelData.innerHTML += `
       <tr>
-        <td>${r.tanggal}</td>
+        <td>${r.tanggal.slice(0,10)}</td>
         <td class="${r.jenis==='Masuk'?'masuk':'keluar'}">${r.jenis}</td>
         <td>${r.member}</td>
         <td>${r.keterangan ?? r.ket ?? ''}</td>
