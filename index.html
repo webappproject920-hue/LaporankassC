@@ -32,7 +32,7 @@ th{background:#eee}
   <button onclick="loginAdmin()">Login</button>
 </div>
 
-<!-- FORM ADMIN -->
+<!-- ADMIN -->
 <div class="card hidden" id="adminForm">
   <h3>Input Transaksi</h3>
 
@@ -92,34 +92,29 @@ th{background:#eee}
 </div>
 
 <script>
-const API_URL="https://script.google.com/macros/s/AKfycbwvS5vGbP2jml484bsAIFD0ntQHr5HInhSYyKyMEmcudJsv2Vk7yqOTmzYbXcL9En-3aQ/exec";
-const ADMIN_PASSWORD="admin123";
+const API_URL = "https://script.google.com/macros/s/AKfycbwvS5vGbP2jml484bsAIFD0ntQHr5HInhSYyKyMEmcudJsv2Vk7yqOTmzYbXcL9En-3aQ/exec";
+const ADMIN_PASSWORD = "admin123";
 
-const members=[
+const members = [
   'Ade Hilman','Sutanto','Joko P','Suyatno','Dwi Diva','Zaenal A',
   'Syarifudin','Wahyudi','Afif','Zuhri','Effendi','Susilo A',
   'Slamet R','Aji Joko','A.Febri','Kuswanto','Adhi M'
 ];
 
-let data=[];
+let data = [];
 
-function formatTanggal(t){
-  const d=new Date(t);
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-async function initApp(){
-  member.innerHTML='<option value="">-- ADMIN / UMUM --</option>';
+function initApp(){
+  member.innerHTML = '<option value="">-- ADMIN / UMUM --</option>';
   members.forEach(m=>member.innerHTML+=`<option>${m}</option>`);
-  await loadData();
+  loadData();
   if(localStorage.isAdmin==="true") showAdmin();
 }
 
 function loginAdmin(){
-  if(adminPass.value===ADMIN_PASSWORD){
-    localStorage.isAdmin="true";
+  if(adminPass.value === ADMIN_PASSWORD){
+    localStorage.isAdmin = "true";
     showAdmin();
-  }else alert("Password salah");
+  } else alert("Password salah");
 }
 
 function logout(){
@@ -133,14 +128,14 @@ function showAdmin(){
 }
 
 async function loadData(){
-  const res=await fetch(API_URL);
-  data=await res.json();
+  const res = await fetch(API_URL);
+  data = await res.json();
   initBulan();
   render();
 }
 
 async function simpan(){
-  if(!tanggal.value||!jumlah.value) return alert("Lengkapi data");
+  if(!tanggal.value || !jumlah.value) return alert("Lengkapi data");
 
   await fetch(API_URL,{
     method:"POST",
@@ -150,54 +145,69 @@ async function simpan(){
       action:"add",
       tanggal:tanggal.value,
       jenis:jenis.value,
-      member:member.value||"ADMIN",
+      member:member.value || "ADMIN",
       keterangan:keterangan.value,
       jumlah:Number(jumlah.value)
     })
   });
 
-  tanggal.value="";jumlah.value="";keterangan.value="";
+  tanggal.value="";
+  jumlah.value="";
+  keterangan.value="";
   member.selectedIndex=0;
-  setTimeout(loadData,500);
+
+  setTimeout(loadData,800);
 }
 
 function initBulan(){
-  const set=new Set();
-  data.forEach(t=>set.add(formatTanggal(t.tanggal).substring(0,7)));
-  filterBulan.innerHTML='<option value="">Semua Bulan</option>';
-  [...set].sort().forEach(b=>filterBulan.innerHTML+=`<option>${b}</option>`);
+  const set = new Set();
+  data.forEach(r=>{
+    if(r.tanggal) set.add(r.tanggal.slice(0,7));
+  });
+  filterBulan.innerHTML = '<option value="">Semua Bulan</option>';
+  [...set].sort().forEach(b=>{
+    filterBulan.innerHTML += `<option value="${b}">${b}</option>`;
+  });
 }
 
 function render(){
-  tabelData.innerHTML="";
-  statusMember.innerHTML="";
-  let masuk=0,keluar=0;
-  const bulan=filterBulan.value;
+  tabelData.innerHTML = "";
+  statusMember.innerHTML = "";
 
-  const filtered=data.filter(t=>!bulan||formatTanggal(t.tanggal).startsWith(bulan));
+  let masuk=0, keluar=0;
+  const bulan = filterBulan.value;
 
-  filtered.forEach(t=>{
-    if(t.jenis==="Masuk") masuk+=t.jumlah;
-    else keluar+=t.jumlah;
-    tabelData.innerHTML+=`
+  const filtered = data.filter(r=>{
+    return r.tanggal && (!bulan || r.tanggal.startsWith(bulan));
+  });
+
+  filtered.forEach(r=>{
+    const jumlah = Number(r.jumlah) || 0;
+
+    if(r.jenis==="Masuk") masuk+=jumlah;
+    else keluar+=jumlah;
+
+    tabelData.innerHTML += `
       <tr>
-        <td>${formatTanggal(t.tanggal)}</td>
-        <td class="${t.jenis==='Masuk'?'masuk':'keluar'}">${t.jenis}</td>
-        <td>${t.member}</td>
-        <td>${t.keterangan || t.ket || ''}</td>
-        <td>Rp ${t.jumlah.toLocaleString('id-ID')}</td>
-      </tr>`;
+        <td>${r.tanggal}</td>
+        <td class="${r.jenis==='Masuk'?'masuk':'keluar'}">${r.jenis}</td>
+        <td>${r.member}</td>
+        <td>${r.keterangan || ''}</td>
+        <td>Rp ${jumlah.toLocaleString('id-ID')}</td>
+      </tr>
+    `;
   });
 
   members.forEach(n=>{
-    const paid=filtered.some(t=>t.jenis==="Masuk"&&t.member===n);
-    statusMember.innerHTML+=`<li>${n} : ${paid?'✅ Sudah bayar':'❌ Belum bayar'}</li>`;
+    const paid = filtered.some(r=>r.jenis==="Masuk" && r.member===n);
+    statusMember.innerHTML += `<li>${n} : ${paid?'✅ Sudah bayar':'❌ Belum bayar'}</li>`;
   });
 
-  totalMasuk.innerText="Rp "+masuk.toLocaleString('id-ID');
-  totalKeluar.innerText="Rp "+keluar.toLocaleString('id-ID');
-  saldo.innerText="Rp "+(masuk-keluar).toLocaleString('id-ID');
+  totalMasuk.innerText = "Rp " + masuk.toLocaleString('id-ID');
+  totalKeluar.innerText = "Rp " + keluar.toLocaleString('id-ID');
+  saldo.innerText = "Rp " + (masuk-keluar).toLocaleString('id-ID');
 }
 </script>
+
 </body>
 </html>
