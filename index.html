@@ -192,7 +192,7 @@ function render(){
         <td>${r.tanggal}</td>
         <td class="${r.jenis==='Masuk'?'masuk':'keluar'}">${r.jenis}</td>
         <td>${r.member}</td>
-        <td>${r.keterangan || ''}</td>
+        <td>${r.keterangan ?? r.ket ?? ''}</td>
         <td>Rp ${jumlah.toLocaleString('id-ID')}</td>
       </tr>
     `;
