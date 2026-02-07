@@ -25,70 +25,68 @@ th{background:#eee}
 
 <div class="header">LAPORAN KAS CURING2 GRUP C</div>
 
-<!-- LOGIN -->
 <div class="card" id="loginBox">
-  <h3>Login Admin</h3>
-  <input type="password" id="adminPass" placeholder="Password admin">
-  <button onclick="loginAdmin()">Login</button>
+<h3>Login Admin</h3>
+<input type="password" id="adminPass" placeholder="Password admin">
+<button onclick="loginAdmin()">Login</button>
 </div>
 
-<!-- FORM ADMIN -->
 <div class="card hidden" id="adminForm">
-  <h3>Input Transaksi</h3>
+<h3>Input Transaksi</h3>
 
-  <label>Tanggal</label>
-  <input type="date" id="tanggal">
+<label>Tanggal</label>
+<input type="date" id="tanggal">
 
-  <label>Jenis</label>
-  <select id="jenis">
-    <option>Masuk</option>
-    <option>Keluar</option>
-  </select>
+<label>Jenis</label>
+<select id="jenis">
+<option>Masuk</option>
+<option>Keluar</option>
+</select>
 
-  <label>Nama Member</label>
-  <select id="member"></select>
+<label>Nama Member</label>
+<select id="member"></select>
 
-  <label>Keterangan</label>
-  <input id="keterangan">
+<label>Keterangan</label>
+<input id="keterangan">
 
-  <label>Jumlah</label>
-  <input type="number" id="jumlah">
+<label>Jumlah</label>
+<input type="number" id="jumlah">
 
-  <button onclick="simpan()">Simpan</button>
-  <button onclick="logout()">Logout</button>
+<button onclick="simpan()">Simpan</button>
+<button onclick="logout()">Logout</button>
 </div>
 
 <div class="card">
-  <h3>Rekap Bulanan</h3>
-  <select id="filterBulan" onchange="render()"></select>
+<h3>Rekap Bulanan</h3>
+<select id="filterBulan" onchange="render()"></select>
 </div>
 
 <div class="card">
-  <h3>Data Transaksi</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Tanggal</th>
-        <th>Jenis</th>
-        <th>Nama</th>
-        <th>Ket</th>
-        <th>Jumlah</th>
-      </tr>
-    </thead>
-    <tbody id="tabelData"></tbody>
-  </table>
+<h3>Data Transaksi</h3>
+<table>
+<thead>
+<tr>
+<th>Tanggal</th>
+<th>Jenis</th>
+<th>Nama</th>
+<th>Ket</th>
+<th>Jumlah</th>
+</tr>
+</thead>
+<tbody id="tabelData"></tbody>
+</table>
 </div>
 
 <div class="card">
-  <h3>Ringkasan</h3>
-  <p>Total Masuk: <b id="totalMasuk"></b></p>
-  <p>Total Keluar: <b id="totalKeluar"></b></p>
-  <p>Saldo: <b id="saldo"></b></p>
+<h3>Ringkasan</h3>
+<p>Total Masuk: <b id="totalMasuk"></b></p>
+<p>Total Keluar: <b id="totalKeluar"></b></p>
+<p>Saldo: <b id="saldo"></b></p>
 </div>
 
 <div class="card">
-  <h3>Status Pembayaran Member</h3>
-  <ul id="statusMember"></ul>
+<h3>Status Pembayaran Member</h3>
+<ul id="statusMember"></ul>
 </div>
 
 <script>
@@ -96,108 +94,123 @@ const API_URL="https://script.google.com/macros/s/AKfycbwvS5vGbP2jml484bsAIFD0nt
 const ADMIN_PASSWORD="admin123";
 
 const members=[
-  'Ade Hilman','Sutanto','Joko P','Suyatno','Dwi Diva','Zaenal A',
-  'Syarifudin','Wahyudi','Afif','Zuhri','Effendi','Susilo A',
-  'Slamet R','Aji Joko','A.Febri','Kuswanto','Adhi M'
+'Ade Hilman','Sutanto','Joko P','Suyatno','Dwi Diva','Zaenal A',
+'Syarifudin','Wahyudi','Afif','Zuhri','Effendi','Susilo A',
+'Slamet R','Aji Joko','A.Febri','Kuswanto','Adhi M'
 ];
 
 let data=[];
 
 function formatTanggal(t){
-  const d=new Date(t);
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const d=new Date(t);
+return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 async function initApp(){
-  member.innerHTML='<option value="">-- ADMIN / UMUM --</option>';
-  members.forEach(m=>member.innerHTML+=`<option>${m}</option>`);
-  await loadData();
-  if(localStorage.isAdmin==="true") showAdmin();
+member.innerHTML='<option value="">-- ADMIN / UMUM --</option>';
+members.forEach(m=>member.innerHTML+=`<option>${m}</option>`);
+await loadData();
+if(localStorage.isAdmin==="true") showAdmin();
 }
 
 function loginAdmin(){
-  if(adminPass.value===ADMIN_PASSWORD){
-    localStorage.isAdmin="true";
-    showAdmin();
-  }else alert("Password salah");
+if(adminPass.value===ADMIN_PASSWORD){
+localStorage.isAdmin="true";
+showAdmin();
+}else alert("Password salah");
 }
 
 function logout(){
-  localStorage.removeItem("isAdmin");
-  location.reload();
+localStorage.removeItem("isAdmin");
+location.reload();
 }
 
 function showAdmin(){
-  loginBox.classList.add("hidden");
-  adminForm.classList.remove("hidden");
+loginBox.classList.add("hidden");
+adminForm.classList.remove("hidden");
 }
 
 async function loadData(){
-  const res=await fetch(API_URL);
-  data=await res.json();
-  initBulan();
-  render();
+const res=await fetch(API_URL);
+data=await res.json();
+initBulan();
+render();
 }
 
 async function simpan(){
-  if(!tanggal.value||!jumlah.value) return alert("Lengkapi data");
+if(!tanggal.value||!jumlah.value) return alert("Lengkapi data");
 
-  await fetch(API_URL,{
-    method:"POST",
-    mode:"no-cors",
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      action:"add",
-      tanggal:tanggal.value,
-      jenis:jenis.value,
-      member:member.value||"ADMIN",
-      keterangan:keterangan.value,
-      jumlah:Number(jumlah.value)
-    })
-  });
+await fetch(API_URL,{
+method:"POST",
+mode:"no-cors",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+action:"add",
+tanggal:tanggal.value,
+jenis:jenis.value,
+member:member.value||"ADMIN",
+keterangan:keterangan.value,
+jumlah:Number(jumlah.value)
+})
+});
 
-  tanggal.value="";jumlah.value="";keterangan.value="";
-  member.selectedIndex=0;
-  setTimeout(loadData,500);
+tanggal.value="";jumlah.value="";keterangan.value="";
+member.selectedIndex=0;
+setTimeout(loadData,500);
 }
 
 function initBulan(){
-  const set=new Set();
-  data.forEach(t=>set.add(formatTanggal(t.tanggal).substring(0,7)));
-  filterBulan.innerHTML='<option value="">Semua Bulan</option>';
-  [...set].sort().forEach(b=>filterBulan.innerHTML+=`<option>${b}</option>`);
+const set=new Set();
+data.forEach(t=>set.add(formatTanggal(t.tanggal).substring(0,7)));
+filterBulan.innerHTML='<option value="">Semua Bulan</option>';
+[...set].sort().forEach(b=>filterBulan.innerHTML+=`<option>${b}</option>`);
 }
 
 function render(){
-  tabelData.innerHTML="";
-  statusMember.innerHTML="";
-  let masuk=0,keluar=0;
-  const bulan=filterBulan.value;
+tabelData.innerHTML="";
+statusMember.innerHTML="";
+let masuk=0,keluar=0;
+const bulan=filterBulan.value;
 
-  const filtered=data.filter(t=>!bulan||formatTanggal(t.tanggal).startsWith(bulan));
+const filtered=data.filter(t=>!bulan||formatTanggal(t.tanggal).startsWith(bulan));
 
-  filtered.forEach(t=>{
-    if(t.jenis==="Masuk") masuk+=t.jumlah;
-    else keluar+=t.jumlah;
-    tabelData.innerHTML+=`
-      <tr>
-        <td>${formatTanggal(t.tanggal)}</td>
-        <td class="${t.jenis==='Masuk'?'masuk':'keluar'}">${t.jenis}</td>
-        <td>${t.member}</td>
-        <td>${t.keterangan||''}</td>
-        <td>Rp ${t.jumlah.toLocaleString('id-ID')}</td>
-      </tr>`;
-  });
+filtered.forEach(t=>{
+if(t.jenis==="Masuk") masuk+=t.jumlah;
+else keluar+=t.jumlah;
 
-  members.forEach(n=>{
-    const paid=filtered.some(t=>t.jenis==="Masuk"&&t.member===n);
-    statusMember.innerHTML+=`<li>${n} : ${paid?'✅ Sudah bayar':'❌ Belum bayar'}</li>`;
-  });
+tabelData.innerHTML+=`
+<tr>
+<td>${formatTanggal(t.tanggal)}</td>
+<td class="${t.jenis==='Masuk'?'masuk':'keluar'}">${t.jenis}</td>
+<td>${t.member}</td>
+<td>${t.keterangan||''}</td>
+<td>Rp ${t.jumlah.toLocaleString('id-ID')}</td>
+</tr>`;
+});
 
-  totalMasuk.innerText="Rp "+masuk.toLocaleString('id-ID');
-  totalKeluar.innerText="Rp "+keluar.toLocaleString('id-ID');
-  saldo.innerText="Rp "+(masuk-keluar).toLocaleString('id-ID');
+members.forEach(n=>{
+const paid=filtered.some(t=>t.jenis==="Masuk"&&t.member===n);
+statusMember.innerHTML+=`<li>${n} : ${paid?'✅ Sudah bayar':'❌ Belum bayar'}</li>`;
+});
+
+totalMasuk.innerText="Rp "+masuk.toLocaleString('id-ID');
+totalKeluar.innerText="Rp "+keluar.toLocaleString('id-ID');
+
+/* ===== PERUBAHAN SATU-SATUNYA ADA DI SINI ===== */
+let saldoAwal=0;
+if(bulan){
+data.forEach(t=>{
+const bln=formatTanggal(t.tanggal).substring(0,7);
+if(bln < bulan){
+if(t.jenis==="Masuk") saldoAwal+=t.jumlah;
+else saldoAwal-=t.jumlah;
 }
+});
+}
+
+saldo.innerText="Rp "+(saldoAwal + masuk - keluar).toLocaleString('id-ID');
+}
+
 </script>
 </body>
 </html>
